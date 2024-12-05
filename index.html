@@ -21,93 +21,88 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/js/all.min.js"></script>
   <script type="module" src="https://gradio.s3-us-west-2.amazonaws.com/4.16.0/gradio.js"></script>
-</head>
+
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="stylesheet" href="./static/css/leaderboard.css">
+
+  <!-- <link href="https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator_bulma.min.css" rel="stylesheet">
+  <script type="text/javascript" src="https://unpkg.com/tabulator-tables@5.5.2/dist/js/tabulator.min.js"></script> -->
+  <script type="text/javascript" src="static/js/sort-table.js" defer></script>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/explorer-index.js"></script>
+  <script src="./static/js/question_card.js"></script>
+
+  <script src="./static/js/leaderboard_testmini.js"></script>  
+  <script src="./data/results/output_folders.js" defer></script>
+  <script src="./data/results/model_scores.js" defer></script>
+
+  <script src="./visualizer/data/data_public.js" defer></script>
+
+  <style>
+      .center-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            margin-top: -20px;
+        }
+    .node {
+      fill: #f8f1e4;
+      stroke: #000;
+      stroke-width: 1;
+      rx: 10;
+      ry: 10;
+    }
+    .node text {
+      font-size: 14px;
+      text-anchor: middle;
+    }
+    .link {
+      fill: none;
+      stroke: #000;
+      stroke-width: 2;
+    }
+    .badge {
+      font-size: 12px;
+    }
+  </style>
+
 
 <style>
-  .expandable-card .card-text-container {
-    max-height: 200px;
-    overflow-y: hidden;
-    position: relative;
+  /* Basic styling for the bar */
+  .navbar {
+      background-color: #333;
+      overflow: hidden;
   }
-
-  .expandable-card.expanded .card-text-container {
-    max-height: none;
+  
+  .navbar a {
+      float: left;
+      display: block;
+      color: #f2f2f2;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
   }
-
-  .expand-btn {
-    position: relative;
-    display: none;
-    background-color: rgba(255, 255, 255, 0.8);
-    /* margin-top: -20px; */
-    /* justify-content: center; */
-    color: #510c75;
-    border-color: transparent;
-  }
-
-  .expand-btn:hover {
-    background-color: rgba(200, 200, 200, 0.8);
-    text-decoration: none;
-    border-color: transparent;
-    color: #510c75;
-  }
-
-  .expand-btn:focus {
-    outline: none;
-    text-decoration: none;
-  }
-
-  .expandable-card:not(.expanded) .card-text-container:after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 90px;
-    background: linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 1));
-  }
-
-  .expandable-card:not(.expanded) .expand-btn {
-    margin-top: -40px;
-  }
-
-  .card-body {
-    padding-bottom: 5px;
-  }
-
-  .vertical-flex-layout {
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-
-  .figure-img {
-    max-width: 100%;
-    height: auto;
-  }
-
-  .adjustable-font-size {
-    font-size: calc(0.5rem + 2vw);
-  }
-
-  .chat-history {
-    flex-grow: 1;
-    overflow-y: auto;
-    /* overflow-x: hidden; */
-    padding: 5px;
-    border-bottom: 1px solid #ccc;
-    margin-bottom: 10px;
-  }
-
-  #gradio pre {
-    background-color: transparent;
+  
+  .navbar a:hover {
+      background-color: #ddd;
+      color: black;
   }
 </style>
 
-<body>
 
+</head>
+<body>
 
   <section class="hero">
     <div class="hero-body">
@@ -287,102 +282,6 @@
     </div>
   </section>
 
-
-
-<section class="section">
-  <div class="container" style="margin-bottom: 2vh;">
-    <!-- Abstract. -->
-    <div class="columns is-centered has-text-centered">
-      <div class="column is-four-fifths">
-        <h2 class="title is-3">Emerging Capabilities</h2>
-        <div class="content has-text-justified">
-        <p>
-        In addition to reporting the LLaVA-OneVision’s capabilities across various benchmarks, we also observe the emerging behaviors of the proposed model with task transfer and composition, paving a promising way to generalize to tackle real-world computer vision tasks in the wild. We illustrate several emerging capabilities using examples as below.
-      </p>
-        <div id="results-carousel" class="carousel results-carousel">
-
-          <div class="box m-5">
-            <div class="content has-text-centered">
-              <img src="demos/df.png" alt="algebraic reasoning" width="100%"/>
-              <p> LLaVA-OneVision transfers its ability to understand diagram and table to multi-image scenarios, interpreting multiple images in a coherent manner.
-            </div>
-          </div>
-
-          <div class="box m-5">
-            <div class="content has-text-centered">
-              <img src="demos/gui.png" alt="arithmetic reasoning" width="80%"/>
-              <p> LLaVA-OneVision plays the role of agent. It recognizes multiple screenshots on the iPhone and take action to interact with the iPhone, providing operation instructions for automating tasks.
-            </div>
-          </div>
-
-          <div class="box m-5">
-            <div class="content has-text-centered">
-              <img src="demos/som.png" alt="arithmetic reasoning" width="100%"/>
-              <p> LLaVA-OneVision exhibits excellent set-of-mark prompting capabilities, ie, referring to marks when answering questions. This example demonstrates that describing specific objects based on numerical labels within an image highlights its comprehension skills in handling fine-grained visual content.
-            </div>
-          </div>
-
-
-          <div class="box m-5">
-            <div class="content has-text-centered">
-              <img src="demos/i2v.png" alt="arithmetic reasoning" width="100%"/>
-              <p> 
-                LLaVA-OneVision learns to generate detailed video creation prompts based on a static image. This capability is generalized to videos from the image-to-image language editing generation.
-              </div>
-          </div>
-
-
-          <div class="box m-5">
-            <div class="content has-text-centered">
-              <img src="demos/video2.png" alt="arithmetic reasoning" width="100%"/>
-              <p> 
-                LLaVA-OneVision learns to analyze differences between videos with the same starting frame but different endings.</div>
-          </div>
-
-
-          <div class="box m-5">
-            <div class="content has-text-centered">
-              <img src="demos/video.png" alt="arithmetic reasoning" width="80%"/>
-              <p> 
-                LLaVA-OneVision learns to analyze differences between videos with similar backgrounds but different foreground objects.</div>
-          </div>
-
-
-          <div class="box m-5">
-            <div class="content has-text-centered">
-              <img src="demos/selfd.png" alt="arithmetic reasoning" width="50%"/>
-              <p> 
-                LLaVA-OneVision analyzes and interprets multi-camera video footage in self-driving contexts.</div>
-          </div>
-
-          <div class="box m-5">
-            <div class="content has-text-centered">
-              <img src="demos/subv.png" alt="arithmetic reasoning" width="60%"/>
-              <p> 
-                LLaVA-OneVision learns to understand and describe composed sub-videos in detail.</div>
-          </div>
-
-
-          <div class="box m-5">
-            <div class="content has-text-centered">
-              <img src="demos/vp.png" alt="arithmetic reasoning" width="50%"/>
-              <p> 
-                LLaVA-OneVision learns to provide detailed descriptions of highlighted subjects in video content.</div>
-          </div>
-
-
-          <div class="box m-5">
-            <div class="content has-text-centered">
-              <img src="demos/messi.png" alt="arithmetic reasoning" width="50%"/>
-              <p> 
-                LLaVA-OneVision’s capability in referring image and video understanding. It accurately identifies the same individual in two images in the first instance. It identifies the same individual in both the image and the video in the second instance and correctly concludes the absence of the individual in the third instance, indicating its understanding capability to relate visual query in both image and video understanding.</div>
-          </div>
-
-      </div>
-    </div>
-    <!--/ Abstract. -->
-</div>
-</section>
 
 <section class="section">
   <div class="container is-max-desktop">
