@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="Chimera">
+  <meta name="keywords" content="Large Multi-modal Models, multi-modal reasoning, visual structural extraction">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LLaVA</title>
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="images/pure_logo.png">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/js/all.min.js"></script>
+  <script type="module" src="https://gradio.s3-us-west-2.amazonaws.com/4.16.0/gradio.js"></script>
+</head>
+
+<style>
+  .expandable-card .card-text-container {
+    max-height: 200px;
+    overflow-y: hidden;
+    position: relative;
+  }
+
+  .expandable-card.expanded .card-text-container {
+    max-height: none;
+  }
+
+  .expand-btn {
+    position: relative;
+    display: none;
+    background-color: rgba(255, 255, 255, 0.8);
+    /* margin-top: -20px; */
+    /* justify-content: center; */
+    color: #510c75;
+    border-color: transparent;
+  }
+
+  .expand-btn:hover {
+    background-color: rgba(200, 200, 200, 0.8);
+    text-decoration: none;
+    border-color: transparent;
+    color: #510c75;
+  }
+
+  .expand-btn:focus {
+    outline: none;
+    text-decoration: none;
+  }
+
+  .expandable-card:not(.expanded) .card-text-container:after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 90px;
+    background: linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 1));
+  }
+
+  .expandable-card:not(.expanded) .expand-btn {
+    margin-top: -40px;
+  }
+
+  .card-body {
+    padding-bottom: 5px;
+  }
+
+  .vertical-flex-layout {
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .figure-img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .adjustable-font-size {
+    font-size: calc(0.5rem + 2vw);
+  }
+
+  .chat-history {
+    flex-grow: 1;
+    overflow-y: auto;
+    /* overflow-x: hidden; */
+    padding: 5px;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 10px;
+  }
+
+  #gradio pre {
+    background-color: transparent;
+  }
+</style>
+
+<body>
+
+
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <h1 class="title is-1 publication-title">Chimera: <span class="is-size-2">Improving Generalist Model with <br>Domain-Specific Experts</span></h1>
+            <h5 class="subtitle is-5 publication-awards">Arxiv 2024</h5>
+            <div class="is-size-5 publication-authors">
+              <span class="author-block">
+                <a href="https://pengts.github.io/" style="color:#f68946;font-weight:normal;">Tianshuo Peng<sup>1,2,*</sup></a>,
+              </span>
+              <span class="author-block">
+                <a href="https://msheng-lee.github.io/" style="color:#008AD7;font-weight:normal;">Mingsheng Li<sup>1,3,*</sup></a>,
+              </span>
+              <span class="author-block">
+                <a href="https://scholar.google.com/citations?user=fb_WgAEAAAAJ&hl=en&oi=sra" style="color:#F2A900;font-weight:normal;">Hongbin Zhou<sup>1</sup></a>,
+              </span>
+              <span class="author-block">
+                <a href="https://scholar.google.com/citations?user=E520fqQAAAAJ&hl=zh-CN" style="color:#F2A900;font-weight:normal;">Renqiu Xia<sup>1,4</sup></a>,
+              </span>
+              <span class="author-block">
+                <a href="https://zrrskywalker.github.io/" style="color:#F2A900;font-weight:normal;">Renrui Zhang<sup>2</sup></a>,
+              </span>
+              <span class="author-block">
+                <a href="http://leibai.site/" style="color:#F2A900;font-weight:normal;">Lei Bai<sup>1</sup></a>,
+              </span>
+              <span class="author-block">
+                <a href="https://scholar.google.com/citations?user=BaqGkQQAAAAJ&hl=zh-CN" style="color:#F2A900;font-weight:normal;">Song Mao<sup>1</sup></a>,
+              </span>
+              <span class="author-block">
+                <a href="https://wangbindl.github.io/" style="color:#F2A900;font-weight:normal;">Bin Wang<sup>1</sup></a>,
+              </span>
+              <span class="author-block">
+                <a href="https://conghui.github.io/" style="color:#F2A900;font-weight:normal;">Conghui He<sup>1</sup></a>,
+              </span>
+              <span class="author-block">
+                <a href="https://scholar.google.com.hk/citations?user=cC8lXi8AAAAJ&hl=en" style="color:#F2A900;font-weight:normal;">Aojun Zhou<sup>2</sup></a>,
+              </span>
+              <span class="author-block">
+                <a href="https://scholar.google.com/citations?user=K0PpvLkAAAAJ&hl=en" style="color:#F2A900;font-weight:normal;">Botian Shi<sup>1</sup></a>,
+              </span>
+              <span class="author-block">
+                <a href="https://eetchen.github.io/" style="color:#F2A900;font-weight:normal;">Tao Chen<sup>3</sup></a>,
+              </span>
+              <span class="author-block">
+                <a href="https://bobrown.github.io/boZhang.github.io/" style="color:#F2A900;font-weight:normal;">Bo Zhang<sup>1,✉,&#x2021;</sup></a>,
+              </span>
+              <span class="author-block">
+                <a href="https://www.ie.cuhk.edu.hk/faculty/yue-xiangyu/" style="color:#F2A900;font-weight:normal;">Xiangyu Yue<sup>2,✉</sup></a>,
+              </span>
+            </div>
+
+            <div class="is-size-5 publication-authors">
+              <span class="author-block"><sup>1</sup>Shanghai Artificial Intelligence Laboratory,</span>
+              <span class="author-block"><sup>2</sup>MMLab, The Chinese University of Hong Kong,</span><br>
+              <span class="author-block"><sup>3</sup>Fudan University,</span>
+              <span class="author-block"><sup>4</sup>Shanghai Jiao Tong University</span><br>
+            </div>
+ 
+            <div class="is-size-5 publication-authors">
+              <sup>*</sup> Equal contribution,  <sup>✉</sup> Corresponding author,  <sup>&#x2021;</sup> Project Leader
+            </div>
+
+
+<!--             <div class="is-size-5 publication-authors">
+              <span class="author-block"><b style="color:#f68946; font-weight:normal">&#x25B6 </b> University of
+                Wisconsin-Madison</b></span>
+              <span class="author-block"><b style="color:#008AD7; font-weight:normal">&#x25B6 </b> Microsoft Research</span>
+              <span class="author-block"><b style="color:#F2A900; font-weight:normal">&#x25B6 </b>Columbia
+                University</span>
+            </div>
+ -->
+
+            
+          <!-- <div class="column has-text-centered">
+            <h3 class="title is-3 publication-title">Improved Baselines with Visual Instruction Fine-tuning</h3>
+            <div class="is-size-5 publication-authors">
+              <span class="author-block">
+                <a href="https://hliu.cc/" style="color:#f68946;font-weight:normal;">Haotian Liu<sup>*</sup></a>,
+              </span>
+              <span class="author-block">
+                <a href="https://chunyuan.li/" style="color:#008AD7;font-weight:normal;">Chunyuan Li<sup>*</sup></a>,
+              </span>
+              <span class="author-block">
+                <a href="https://yuheng-li.github.io" style="color:#008AD7;font-weight:normal;">Yuheng Li</a>,
+              </span>
+              <span class="author-block">
+                <a href="https://pages.cs.wisc.edu/~yongjaelee/" style="color:#f68946;font-weight:normal;">Yong Jae
+                  Lee</a>
+              </span>
+            </div>
+
+            <div class="is-size-5 publication-authors">
+              <span class="author-block"><b style="color:#f68946; font-weight:normal">&#x25B6 </b> University of
+                Wisconsin-Madison</b></span>
+              <span class="author-block"><b style="color:#008AD7; font-weight:normal">&#x25B6 </b> Microsoft Research</span>
+            </div> -->
+
+            <div class="column has-text-centered">
+              <div class="publication-links">
+                <span class="link-block">
+                  <a href="" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                    </span>
+                    <span>ArXiv (Chimera-1.0)</span>
+                  </a>
+                </span>
+                <span class="link-block">
+                  <a href="https://github.com/UniModal4Reasoning/Chimera" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fab fa-github"></i>
+                    </span>
+                    <span>Code</span>
+                  </a>
+                </span>
+<!--                 <span class="link-block">
+                  <a href="https://llava.hliu.cc" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="far fa-images"></i>
+                    </span>
+                    <span>Demo</span>
+                  </a>
+                </span> -->
+<!--                 <span class="link-block">
+                  <a href="https://huggingface.co/datasets/liuhaotian/LLaVA-Instruct-150K" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fas fa-database"></i>
+                    </span>
+                    <span>Dataset</span>
+                  </a>
+                </span> -->
+                <span class="link-block">
+                  <a href="https://huggingface.co/collections/U4R/chimera-10-6749542e2f0dfa09414232c0" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fas fa-share-square"></i>
+                    </span>
+                    <span>Model</span>
+                  </a>
+                </span>
+
+                <!-- <span class="link-block">
+                <a href="#"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <i class="fab fa-youtube"></i>
+                  </span>
+                  <span>Video</span>
+                  </a>
+              </span> -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="hero teaser">
+    <div class="container is-max-desktop">
+      <div class="hero-body">
+        <h4 class="subtitle">
+          🔥<span style="color: #ff3860">[NEW!]</span> 
+          Chimera-Reasoner-8B gets 64.9 on MathVista, achieves new SoTA under 10B scale models! <br>
+          🔥<span style="color: #ff3860">[NEW!]</span>
+          Chimera-Extractor demonstrates powerful extraction performance on various types of documents! <br>
+          🔥<span style="color: #ff3860">[NEW!]</span>
+          <a href="https://huggingface.co/collections/U4R/chimera-10-6749542e2f0dfa09414232c0">Weights</a> & <a href="https://github.com/UniModal4Reasoning/Chimera">Inference code</a> have been released！
+        </h4>
+      </div>
+    </div>
+  </section>
+
+
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- Abstract. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-full">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+              Recent advancements in Large Multi-modal Models (LMMs) underscore the importance of scaling by increasing image-text paired data, achieving impressive performance on general tasks. 
+              Despite their effectiveness in broad applications, generalist models are primarily trained on web-scale datasets dominated by natural images, resulting in the sacrifice of specialized capabilities for domain-specific tasks that require extensive domain prior knowledge. 
+              Moreover, directly integrating expert models tailored for specific domains is challenging due to the representational gap and imbalanced optimization between the generalist model and experts. 
+              To address these challenges, we introduce <b>Chimera</b>, a scalable and low-cost multi-modal pipeline designed to boost the ability of existing LMMs with domain-specific experts. 
+              Specifically, we design a progressive training strategy to integrate features from expert models into the input of a generalist LMM. 
+              To address the imbalanced optimization caused by the well-aligned general visual encoder, we introduce a novel Generalist-Specialist Collaboration Masking (GSCM) mechanism. 
+              This results in a versatile model that excels across the chart, table, math, and document domains, achieving state-of-the-art performance on multi-modal reasoning and visual content extraction tasks, both of which are challenging tasks for assessing existing LMMs. 
+              We will release Chimera's weights, along with the data used for training and evaluation, to facilitate future research on LMMs.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-full">
+        <h2 class="title is-3">Method</h2>
+      </div>
+    </div>
+  </div>
+  <!--/ Results. -->    
+<div class="container is-max-desktop">
+
+  <div class="columns is-centered">
+    <div class="column is-full-width">
+      <div class="content has-text-justified"> 
+        <p>
+          We introduce Chimera, a <b>scalable</b>b> pipeline that integrates specialist models into generalist LMMs, facilitating their adaptation to diverse specialized tasks. 
+          Chimera comprises a general visual encoder, a general projector paired with a language model pre-trained from an LMM, alongside a router and an expert model suite, which includes specialized expert models and their corresponding expert projectors. 
+          Chimera uses a <b>Generalist-Specialist Collaboration Masking</b>b> (GSCM) mechanism to facilitate the alignment with expert models. 
+          <br>
+          We consider a progressive two-stage training procedure:
+          <ul type="1">
+            <li><b>Stage 1: Domain-General Knowledge Alignment</b>. <span style="font-size: 95%;">To initially align domain-specific knowledge with the semantic space of the generalist LMM, we train the model using tasks that directly perceive diverse image content. We only train the general projector and expert projectors during this stage.</span></li>
+            <li><b>Stage 2: Visual Instruction Tuning</b>. <span style="font-size: 95%;">To further enhance the performance of Chimera on specialized tasks, we perform visual instruction tuning on different domain-specific tasks with the proposed GSCM. All projectors and LLM are updated during this stage.</span></li>
+          </ul>  
+          Please check out our 
+          <a href="https://huggingface.co/collections/U4R/chimera-10-6749542e2f0dfa09414232c0">[Model Zoo]</a>.
+        </p>
+      </div>
+      <centering>
+        <div style="text-align: center;">
+          <img id="teaser" width="70%" src="images/overview.png">     
+        </div>
+
+      
+      </centering>           
+    </div>
+  </div>
+
+
+</section>
+  
+
+
+  
+<footer class="footer">
+  <div class="container">
+    <div class="content has-text-centered">
+      <a class="icon-link"
+         href="">
+        <i class="fas fa-file-pdf"></i>
+      </a>
+      <a class="icon-link" href="https://github.com/UniModal4Reasoning/Chimera" class="external-link" disabled>
+        <i class="fab fa-github"></i>
+      </a>
+    </div>
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            This website is adapted from <a
+              href="https://github.com/nerfies/nerfies.github.io">Nerfies</a>, licensed under a <a rel="license"
+                                                href="http://creativecommons.org/licenses/by-sa/4.0/">Creative
+            Commons Attribution-ShareAlike 4.0 International License</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap4.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#nr3d_table').DataTable({
+            columnDefs: [ // disable sorting of the first column
+                {orderable: false, targets: 0}
+            ],
+            "order": [[1, "desc"]], // Default Ordering on the overall column
+            searching: false, // Disable search bar
+            paging: false, // Stop pagination for now
+            info: false // hide "Showing 1 to M of N entries" line
+        });
+
+        $('#sr3d_table').DataTable({
+            columnDefs: [ // disable sorting of the first column
+                {orderable: false, targets: 0}
+            ],
+            "order": [[1, "desc"]], // Default Ordering on the overall column
+            searching: false, // Disable search bar
+            paging: false, // Stop pagination for now
+            info: false // hide "Showing 1 to M of N entries" line
+        });
+    })
+</script>
+
+  <script>
+    // Handle message showing
+    function createChatRow(sender, text, imageSrc) {
+      var article = document.createElement("article");
+      article.className = "media"
+
+      var figure = document.createElement("figure");
+      figure.className = "media-left";
+
+      var span = document.createElement("span");
+      span.className = "icon is-large";
+
+      var icon = document.createElement("i");
+      icon.className = "fas fas fa-2x" + (sender === "User" ? " fa-user " : sender === "LLaVA" ? " fa-robot" : "");
+
+      var media = document.createElement("div");
+      media.className = "media-content";
+
+      var content = document.createElement("div");
+      content.className = "content";
+
+      var para = document.createElement("p");
+
+      // wrap text in pre tag to preserve whitespace and line breaks
+      var pre_text = document.createElement("pre");
+      pre_text.style = "background-color: white; font-size: 18px; font-family: Arial; padding: 0; margin: 0; white-space: pre-wrap; word-wrap: break-word;";
+      var paraText = document.createTextNode(text);
+      pre_text.appendChild(paraText);
+
+      var strong = document.createElement("strong");
+      strong.innerHTML = sender;
+      var br = document.createElement("br");
+
+      para.appendChild(strong);
+      para.appendChild(br);
+      para.appendChild(pre_text);
+
+      // Add image if imageSrc is provided
+      if (imageSrc) {
+        var img = document.createElement("img");
+        img.src = imageSrc;
+        img.style = "max-width: 100%; max-height: 300px;"; // Adjust the style as needed
+        para.appendChild(img);
+      }
+
+      content.appendChild(para);
+      media.appendChild(content);
+      span.appendChild(icon);
+      figure.appendChild(span);
+      if (sender !== "Description") {
+        article.appendChild(figure);
+      };
+      article.appendChild(media);
+      return article;
+    }
+
+    function addMessageToChatHistory(sender, message, imageSrc) {
+      const chatHistory = document.querySelector('.chat-history');
+      const chatRow = createChatRow(sender, message, imageSrc);
+      chatHistory.appendChild(chatRow);
+      chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+
+    function clearChatHistory() {
+      const chatHistory = document.querySelector('.chat-history');
+      chatHistory.innerHTML = "";
+    }
+
+    // 
+    const conversations = [
+      {
+        "description": "monalisa",
+        "turns": [
+          // ["Description", "Please read the description and answer the question."],
+          ["User", "", "/static/images/monalisa.jpg"],
+          ["User", "Do you know who drew this painting?​"],
+          ["LLaVA",
+            "The painting depicts a woman, commonly believed to be Mona Lisa, the famous artwork by Leonardo da Vinci. " +
+            "It is a portrait painting that showcases the woman's enigmatic smile and has become one of the most famous and iconic art pieces in the world. " +
+            "The original work is displayed in the Louvre Museum in Paris, and it is known for its intricate details, use of oil paint, and the artist's innovative techniques that contributed to its enduring appeal and mystery.​​"
+          ]
+        ]
+      },
+      {
+        "description": "monalisa with dog head",
+        "turns": [
+          ["User", "", "/static/images/monalisa-fun.jpg"],
+          ["User", "Do you know who drew this painting?​"],
+          ["LLaVA", "The painting depicts a dog in a humorous situation, where it appears to be wearing a woman's dress and standing in front of a landscape. Although the artist of the painting is not explicitly identified, it could be a reference to the famous artist Da Vinci, known for his artistic works, including the Mona Lisa. The painting is likely a creative and comical take on the traditional portrait style, replacing a human figure with a dog dressed in a woman's clothing, making it an interesting and amusing visual piece.​"]
+        ]
+      },
+      {
+        "description": "Titanic Rose and Jack",
+        "turns": [
+          ["User", "", "/static/images/titanic.jpg"],
+          ["User", "What's the ending of this movie?​​"],
+          ["LLaVA", "​In the image, a young woman is leaning on a man in front of a beautiful sunset, with both of them standing on a boat. They appear to be enjoying a romantic moment together. The scene suggests that they could be depicted as the characters Jack and Rose from the popular movie Titanic. In the movie, their romance blossoms aboard the fictional ocean liner Titanic, with the pair ultimately sharing a passionate kiss as the ship sinks into the ocean. The ending of the movie is known for its emotional and heartfelt scenes, where the characters are forced to say goodbye to each other as they are separated by the sinking ship. The image evokes a sense of romance and nostalgia, paying tribute to the iconic love story portrayed in the movie Titanic.​"]
+        ]
+      },
+      {
+        "description": "Fridge",
+        "turns": [
+          ["User", "", "/static/images/fridge.jpg"],
+          ["User", "What are the meals that I can cook with these?​​"],
+          ["LLaVA", "With the variety of food items stored in the refrigerator, you can prepare several meals. For example, you can create a fruit salad using the strawberries, blueberries, and carrots. Additionally, you can make a delicious smoothie using the fruits and vegetables, which would be a healthy and nutritious snack or breakfast option. The milk and eggs can be used to create various dishes, such as a milk-based smoothie, a baked casserole, or scrambled eggs. The juice can also be used to make a fresh fruit and juice mix or as a refreshing homemade popsicle. The possibilities are vast, and the meals you can create will depend on your preferences and dietary needs.​​"],
+          ["User", "I would like to do the fruit salad.  Show me the recipe.​"],
+          ["LLaVA",
+            `Certainly! Here's a simple fruit salad recipe using the items in your refrigerator:​
+
+Ingredients:​
+- 2 cups fresh strawberries, sliced​
+- 1 cup fresh blueberries​
+- 1 large carrot, grated​
+- Juice of half a lemon​
+- A handful of chopped fresh parsley or mint​
+- A few ice cubes​
+- Optional: honey or maple syrup (adjust to taste)​
+
+Instructions:​
+1. In a large bowl, combine the sliced strawberries, blueberries, and carrot. Gently toss them together to mix.​
+2. Drizzle the juice of half a lemon over the fruit and vegetables to prevent them from oxidizing and add a refreshing citrus flavor.​
+3. Sprinkle the chopped fresh parsley or mint over the fruit and gently toss once more.​
+4. If desired, add a drizzle of honey or maple syrup for a touch of sweetness. Adjust the amount according to your taste preferences.​
+5. Cover the bowl and refrigerate the fruit salad for at least 30 minutes or up to a few hours. This allows the flavors to meld and creates a more refreshing salad.​
+6. Serve the fruit salad in cups or bowls, garnished with a sprinkle of fresh parsley or mint, if desired.​
+
+This fruit salad recipe is perfect for a healthy snack or side dish, and with the variety of ingredients available in your refrigerator, it should be easy to put together quickly.`]]
+      },
+      {
+        "description": "Beautiful View",
+        "turns": [
+          ["User", "", "/static/images/view.jpg"],
+          ["User", "What are the things I should be cautious about when I visit here?​​"],
+          ["LLaVA", "When visiting this peaceful location with a pier extending over a serene lake, surrounded by mountains, there are several things to be cautious about. First, pay attention to the weather conditions, as sudden changes in weather, especially strong winds or storms, can cause the water to become rough and pose risks to the stability of the pier. Second, be mindful of the structural integrity of the pier; avoid overloading it with too many people or excessive weight, as this could potentially damage the pier or cause it to collapse. Additionally, be aware of the surrounding wildlife and respect their space; do not harm or disturb them in any way. Finally, if you decide to go fishing, ensure that you adhere to any local fishing regulations and use appropriate fishing techniques to keep the lake ecosystem healthy and maintain the balance of the food chain.​​"],
+          ["User", "Compose an engaging travel blog post about my trip to this place, highlighting the beautiful sceneries, joyful experiences, and include possible anecdotes.​​"],
+          ["LLaVA",
+            `Traveling to this picturesque location with a serene lake and mountains in the background was a refreshing and rejuvenating experience. The pier extending over the calm water provided an excellent vantage point from which to appreciate the breathtaking scenery. As I stood on the pier, I couldn't help but feel a deep connection with nature, taking a moment to soak in the peaceful atmosphere.​
+
+One of the highlights of my trip was undoubtedly the fishing experience. The area is teeming with life, and I was thrilled to land a sizeable catch, despite the modest size of the lake. The joy of fishing in such a beautiful setting was truly rewarding, and it allowed me to take a break from my busy life and truly immerse myself in the tranquility of nature.​
+
+While exploring the surrounding area, I came across a family of birds that had built a nest close to the pier, adding to the charm of the location. Interacting with the wildlife and observing their behavior was an enriching experience that I'll cherish for years to come.​
+
+In conclusion, this idyllic destination provided me with an opportunity to unwind and recharge, surrounded by mesmerizing natural beauty and the gentle sounds of water and wildlife. If you're looking for a serene escape from the hustle and bustle of everyday life, this pier overlooking the lake is the perfect place to find solace and reconnect with nature.`
+          ]
+        ]
+      },
+    ];
+
+    // The current image index
+    let currentIndex = 0;
+
+    // The function to update the displayed chat history
+    function update_dialog_demo() {
+      // Clear the chat history
+      clearChatHistory();
+
+      for (let i = 0; i < conversations[currentIndex].turns.length; i++) {
+        if (conversations[currentIndex].turns[i].length == 2) {
+          addMessageToChatHistory(conversations[currentIndex].turns[i][0], conversations[currentIndex].turns[i][1]);
+        }
+        else {
+          addMessageToChatHistory(conversations[currentIndex].turns[i][0], conversations[currentIndex].turns[i][1], conversations[currentIndex].turns[i][2]);
+        }
+      }
+
+      // scroll to the top of the chat history
+      document.querySelector('.chat-history').scrollTop = 0;
+    }
+
+    // Initialize the displayed image
+    update_dialog_demo();
+
+    // Event listeners for the buttons
+    document.getElementById('prev-question').addEventListener('click', () => {
+      currentIndex = (currentIndex - 1 + conversations.length) % conversations.length;
+      update_dialog_demo();
+    });
+
+    document.getElementById('next-question').addEventListener('click', () => {
+      currentIndex = (currentIndex + 1) % conversations.length;
+      update_dialog_demo();
+    });
+
+
+  </script>
+
+</body>
+
+</html>
