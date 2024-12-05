@@ -322,7 +322,7 @@
     <div class="column is-full-width">
       <div class="content has-text-justified"> 
         <p>
-          We introduce Chimera, a <b>scalable</b>b> pipeline that integrates specialist models into generalist LMMs, facilitating their adaptation to diverse specialized tasks. 
+          We introduce Chimera, a <b>scalable</b> pipeline that integrates specialist models into generalist LMMs, facilitating their adaptation to diverse specialized tasks. 
           Chimera comprises a general visual encoder, a general projector paired with a language model pre-trained from an LMM, alongside a router and an expert model suite, which includes specialized expert models and their corresponding expert projectors. 
           Chimera uses a <b>Generalist-Specialist Collaboration Masking</b> (GSCM) mechanism to facilitate the alignment with expert models. 
           <br>
@@ -344,9 +344,48 @@
       </centering>           
     </div>
   </div>
-
-
 </section>
+
+
+
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-full">
+        <h2 class="title is-3">Performance</h2>
+      </div>
+    </div>
+  </div>
+  <!--/ Results. -->    
+<div class="container is-max-desktop">
+
+  <div class="columns is-centered">
+    <div class="column is-full-width">
+      <div class="content has-text-justified"> 
+        <p>
+          We conduct quantitative experiments to evaluate Chimera's capabilities in multi-modal reasoning and visual content extraction. 
+          Chimera achieves a new SOTA for LMMs of comparable scale on two multi-modal reasoning benchmarks. 
+          It also surpasses or matches the performance of representative expert models in visual content extraction tasks across chart, table, and document domains.
+        </p>
+      </div>
+      <centering>
+        <div style="text-align: center;">
+          <img id="teaser" width="70%" src="static/reasoning_mathvista.png">     
+        </div>
+        <div style="text-align: center;">
+          <img id="teaser" width="70%" src="static/reasoning_mathverse.png">     
+        </div>
+        <div style="text-align: center;">
+          <img id="teaser" width="70%" src="static/extraction_all.png">     
+        </div>
+      
+      </centering>           
+    </div>
+  </div>
+</section>
+
+
   
 
 <section class="section">
